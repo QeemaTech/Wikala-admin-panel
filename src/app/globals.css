@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Wikala Admin — design tokens (ported from design/wikala/project/styles.css)
+   ============================================================ */
+:root {
+  /* mono font — fallback if next/font CSS variable class isn't applied */
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+
+  /* brand */
+  --wk-blue: #226199;
+  --wk-blue-700: #1a4a76;
+  --wk-blue-800: #133757;
+  --wk-blue-900: #0d2a44;
+  --wk-blue-400: #4d85bc;
+  --wk-blue-200: #b8d0e6;
+  --wk-blue-50: #eef4fa;
+
+  /* sidebar */
+  --side-bg: #0d2a44;
+  --side-bg-2: #133757;
+  --side-text: #b9cadb;
+  --side-text-mut: #6f8aa6;
+  --side-active: #226199;
+  --side-border: #1a3b5e;
+
+  /* surfaces */
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-2: #fafbfd;
+  --border: #e5eaf1;
+  --border-strong: #d4dbe5;
+
+  /* text */
+  --text: #0d1b2e;
+  --text-2: #3b4a60;
+  --muted: #6c7b91;
+  --muted-2: #8a98ac;
+
+  /* semantic */
+  --green: #1f9c63;
+  --green-50: #e7f7ee;
+  --amber: #d98a17;
+  --amber-50: #fcf2dd;
+  --red: #d44030;
+  --red-50: #fae6e3;
+  --violet: #7a4cc4;
+  --violet-50: #f1eafa;
+  --teal: #178a8a;
+  --teal-50: #def3f3;
+
+  /* shadows */
+  --shadow-sm: 0 1px 2px rgba(13, 27, 46, 0.04), 0 1px 1px rgba(13, 27, 46, 0.03);
+  --shadow: 0 4px 14px rgba(13, 27, 46, 0.06), 0 1px 2px rgba(13, 27, 46, 0.04);
+  --shadow-lg: 0 16px 40px rgba(13, 27, 46, 0.1), 0 2px 6px rgba(13, 27, 46, 0.05);
+
+  /* radii */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@layer components {
+  /* thin dark scrollbar for the sidebar nav */
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #2a4a6b transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: #2a4a6b;
+    border-radius: 4px;
+  }
+}
