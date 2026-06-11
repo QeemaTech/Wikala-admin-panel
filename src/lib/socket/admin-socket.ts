@@ -1,10 +1,10 @@
 import { io, type Socket } from 'socket.io-client';
 import { useAuthStore } from '@/features/auth/auth-store';
+import { resolveApiBaseUrl } from '@/lib/api/base-url';
 
 function baseHost(): string {
-  const url = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
   try {
-    return new URL(url).origin;
+    return new URL(resolveApiBaseUrl()).origin;
   } catch {
     return 'http://localhost:3000';
   }

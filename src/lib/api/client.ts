@@ -1,7 +1,8 @@
 import { ApiError } from './errors';
 import { useAuthStore } from '@/features/auth/auth-store';
+import { resolveApiBaseUrl } from './base-url';
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
+const BASE = resolveApiBaseUrl();
 
 function buildHeaders(token?: string | null, write = false): Record<string, string> {
   const h: Record<string, string> = {
