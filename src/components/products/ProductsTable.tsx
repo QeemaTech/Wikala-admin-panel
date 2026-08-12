@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
 import { StatusPill } from '@/components/ui/StatusPill';
@@ -58,6 +60,8 @@ export function ProductsTable({
   onDelete,
   onPageChange,
 }: ProductsTableProps) {
+  const router = useRouter();
+
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-2">
@@ -104,9 +108,17 @@ export function ProductsTable({
           </thead>
           <tbody>
             {items.map((p) => (
-              <tr key={p.id} className="border-b border-border last:border-0 hover:bg-surface/60">
+              <tr
+                key={p.id}
+                onClick={() => router.push(`/products/${p.id}`)}
+                className="cursor-pointer border-b border-border last:border-0 hover:bg-surface/60"
+              >
                 <td className="px-3 py-2.5">
-                  <div className="flex items-center gap-2.5">
+                  <Link
+                    href={`/products/${p.id}`}
+                    className="flex items-center gap-2.5 group/link"
+                    title="عرض تفاصيل المنتج"
+                  >
                     <Thumbnail
                       src={p.coverUrl}
                       alt={p.title}
@@ -114,12 +126,14 @@ export function ProductsTable({
                       className="h-10 w-10 rounded-[8px] bg-surface-2"
                     />
                     <div className="min-w-0">
-                      <div className="truncate font-medium text-ink">{p.title}</div>
+                      <div className="truncate font-medium text-ink group-hover/link:text-brand">
+                        {p.title}
+                      </div>
                       {p.badgeText && (
                         <span className="text-[11px] text-muted">{p.badgeText}</span>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-3 py-2.5 text-ink-2">{p.categoryNameAr ?? '—'}</td>
                 <td className="px-3 py-2.5">
@@ -156,8 +170,16 @@ export function ProductsTable({
                 <td className="px-3 py-2.5">
                   <StatusPill status={p.status} />
                 </td>
-                <td className="px-3 py-2.5">
+                {/* Actions must not bubble into the row's navigation. */}
+                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1">
+                    <Link
+                      href={`/products/${p.id}`}
+                      className="flex items-center gap-1 rounded-[5px] px-2 py-1 text-[12px] text-muted hover:bg-surface hover:text-ink"
+                    >
+                      <Icon name="eye" size={12} />
+                      عرض
+                    </Link>
                     <button
                       onClick={() => onEdit(p)}
                       className="flex items-center gap-1 rounded-[5px] px-2 py-1 text-[12px] text-muted hover:bg-surface hover:text-ink"

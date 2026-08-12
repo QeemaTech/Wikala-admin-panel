@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PageHead } from '@/components/ui/PageHead';
 import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
@@ -37,6 +39,7 @@ function discountLabel(c: CouponDTO): string {
 }
 
 export default function CouponsPage() {
+  const router = useRouter();
   const [active, setActive] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -129,9 +132,18 @@ export default function CouponsPage() {
             </thead>
             <tbody>
               {items.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface/60">
-                  <td dir="ltr" className="px-3 py-2.5 text-start font-mono font-semibold text-ink">
-                    {c.code}
+                <tr
+                  key={c.id}
+                  onClick={() => router.push(`/coupons/${c.id}`)}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-surface/60"
+                >
+                  <td dir="ltr" className="px-3 py-2.5 text-start">
+                    <Link
+                      href={`/coupons/${c.id}`}
+                      className="font-mono font-semibold text-ink hover:text-brand"
+                    >
+                      {c.code}
+                    </Link>
                   </td>
                   <td className="px-3 py-2.5 text-ink-2">{COUPON_TYPE_LABELS[c.type]}</td>
                   <td className="px-3 py-2.5 font-mono text-ink">{discountLabel(c)}</td>
@@ -159,8 +171,15 @@ export default function CouponsPage() {
                       </Chip>
                     )}
                   </td>
-                  <td className="px-3 py-2.5">
+                  {/* Actions must not bubble into the row's navigation. */}
+                  <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/coupons/${c.id}`}
+                        className="flex items-center gap-1 rounded-[5px] px-2 py-1 text-[12px] text-muted hover:bg-surface hover:text-ink"
+                      >
+                        <Icon name="eye" size={12} /> عرض
+                      </Link>
                       <button
                         onClick={() => setFormFor({ coupon: c })}
                         className="flex items-center gap-1 rounded-[5px] px-2 py-1 text-[12px] text-muted hover:bg-surface hover:text-ink"

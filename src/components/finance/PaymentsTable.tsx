@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/Avatar';
 import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
@@ -49,7 +51,6 @@ interface PaymentsTableProps {
   meta?: AdminTransactionsMeta;
   isLoading: boolean;
   isError: boolean;
-  onOpenOrder: (orderId: string) => void;
   onPageChange: (page: number) => void;
 }
 
@@ -58,9 +59,10 @@ export function PaymentsTable({
   meta,
   isLoading,
   isError,
-  onOpenOrder,
   onPageChange,
 }: PaymentsTableProps) {
+  const router = useRouter();
+
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-2">
@@ -108,9 +110,12 @@ export function PaymentsTable({
           <tbody>
             {items.map((tx) => {
               const status = STATUS[tx.status] ?? { label: tx.status, tone: 'gray' as const };
-              const orderId = tx.reference?.orderId;
               return (
-                <tr key={tx.id} className="border-b border-border last:border-0 hover:bg-surface/60">
+                <tr
+                  key={tx.id}
+                  onClick={() => router.push(`/payments/${tx.id}`)}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-surface/60"
+                >
                   <td className="px-3 py-2.5 text-muted">{fmtDate(tx.createdAt)}</td>
                   <td className="px-3 py-2.5">
                     {tx.user ? (
@@ -131,7 +136,9 @@ export function PaymentsTable({
                     <Chip tone={KIND_TONE[tx.kind] ?? 'gray'}>{KIND_LABELS[tx.kind] ?? tx.kind}</Chip>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="font-mono text-ink">{tx.reference?.label ?? '—'}</span>
+                    <Link href={`/payments/${tx.id}`} className="font-mono text-ink hover:text-brand">
+                      {tx.reference?.label ?? '—'}
+                    </Link>
                     {tx.reference?.itemCount != null && (
                       <div className="text-[11px] text-muted">
                         {formatNumber(tx.reference.itemCount)} قطعة
@@ -153,14 +160,12 @@ export function PaymentsTable({
                     </Chip>
                   </td>
                   <td className="px-3 py-2.5">
-                    {orderId && (
-                      <button
-                        onClick={() => onOpenOrder(orderId)}
-                        className="flex items-center gap-1 rounded-[5px] px-2 py-1 text-[12px] text-muted hover:bg-surface hover:text-ink"
-                      >
-                        <Icon name="eye" size={12} /> الطلب
-                      </button>
-                    )}
+                    <Link
+                      href={`/payments/${tx.id}`}
+                      className="flex items-center justify-end gap-1 rounded-[5px] px-2 py-1 text-[12px] text-muted hover:bg-surface hover:text-ink"
+                    >
+                      <Icon name="eye" size={12} /> التفاصيل
+                    </Link>
                   </td>
                 </tr>
               );

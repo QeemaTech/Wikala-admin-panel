@@ -15,8 +15,10 @@ export interface ProductReviewDTO {
   createdAt: string | null;
 }
 
-export function useReviewQueue(params: { status?: ReviewStatus | ''; page?: number } = {}) {
-  const qs = buildQuery({ status: params.status, page: params.page });
+export function useReviewQueue(
+  params: { status?: ReviewStatus | ''; productId?: string; page?: number } = {},
+) {
+  const qs = buildQuery({ status: params.status, productId: params.productId, page: params.page });
   return useQuery({
     queryKey: ['product-reviews', params],
     queryFn: () => get<{ items: ProductReviewDTO[]; meta: ListMeta }>(`/admin/reviews${qs}`),

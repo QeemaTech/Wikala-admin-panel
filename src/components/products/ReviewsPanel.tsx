@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Avatar } from '@/components/ui/Avatar';
 import { Icon } from '@/components/ui/Icon';
 import { Segmented } from '@/components/ui/Segmented';
-import { StatusPill } from '@/components/ui/StatusPill';
-import { formatNumber, formatRelativeTime } from '@/lib/i18n/format';
+import { ReviewRow } from './ReviewRow';
+import { formatNumber } from '@/lib/i18n/format';
 import {
   useModerateReview,
   useReviewQueue,
@@ -18,21 +17,6 @@ const FILTERS = [
   { value: 'REJECTED', label: 'مرفوضة' },
   { value: '', label: 'الكل' },
 ];
-
-function Stars({ rating }: { rating: number }) {
-  return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`${rating} من 5`}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Icon
-          key={i}
-          name="star"
-          size={12}
-          className={i < rating ? 'text-amber' : 'text-border'}
-        />
-      ))}
-    </span>
-  );
-}
 
 export function ReviewsPanel() {
   const [status, setStatus] = useState<ReviewStatus | ''>('PENDING');
@@ -81,44 +65,7 @@ export function ReviewsPanel() {
       ) : (
         <div className="space-y-2">
           {items.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-start gap-3 rounded-[10px] border border-border bg-white p-3.5"
-            >
-              <Avatar name={r.author?.name ?? '؟'} src={r.author?.avatarUrl ?? undefined} size={36} />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[13px] font-medium text-ink">
-                    {r.author?.name ?? 'مستخدم محذوف'}
-                  </span>
-                  <Stars rating={r.rating} />
-                  <StatusPill status={r.status} />
-                  {r.createdAt && (
-                    <span className="text-[11px] text-muted">{formatRelativeTime(r.createdAt)}</span>
-                  )}
-                </div>
-                <p className="mt-0.5 text-[11.5px] text-muted">{r.productTitle ?? '—'}</p>
-                {r.body && <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">{r.body}</p>}
-              </div>
-              {r.status !== 'PUBLISHED' && (
-                <button
-                  onClick={() => act(r.id, 'PUBLISHED')}
-                  disabled={moderate.isPending}
-                  className="flex items-center gap-1 rounded-[7px] border border-green/30 bg-green/10 px-2.5 py-1.5 text-[12px] font-medium text-green disabled:opacity-50"
-                >
-                  <Icon name="check" size={12} /> نشر
-                </button>
-              )}
-              {r.status !== 'REJECTED' && (
-                <button
-                  onClick={() => act(r.id, 'REJECTED')}
-                  disabled={moderate.isPending}
-                  className="flex items-center gap-1 rounded-[7px] border border-border px-2.5 py-1.5 text-[12px] font-medium text-muted hover:text-red disabled:opacity-50"
-                >
-                  <Icon name="x" size={12} /> رفض
-                </button>
-              )}
-            </div>
+            <ReviewRow key={r.id} review={r} pending={moderate.isPending} onModerate={act} />
           ))}
         </div>
       )}

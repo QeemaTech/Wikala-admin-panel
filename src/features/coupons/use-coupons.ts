@@ -27,6 +27,38 @@ export interface CouponDTO {
   createdAt: string | null;
 }
 
+/** One order that redeemed the coupon. */
+export interface CouponRedemptionDTO {
+  orderId: string;
+  orderNo: string;
+  status: string;
+  discountMinor: number;
+  totalMinor: number;
+  currency: string;
+  buyer: { id: string; name: string; phone: string } | null;
+  placedAt: string | null;
+}
+
+export interface CouponDetailDTO extends CouponDTO {
+  /** Cancelled and refunded orders are excluded — they gave the discount back. */
+  usage: {
+    orderCount: number;
+    totalDiscountMinor: number;
+    totalRevenueMinor: number;
+    currency: string;
+  };
+  redemptions: CouponRedemptionDTO[];
+}
+
+export function useCoupon(id: string | null) {
+  return useQuery({
+    queryKey: ['coupon', id],
+    queryFn: () => get<CouponDetailDTO>(`/admin/coupons/${id}`),
+    enabled: !!id,
+    staleTime: 30_000,
+  });
+}
+
 export interface CouponPayload {
   code?: string;
   type?: CouponType;
@@ -52,7 +84,10 @@ export function useCoupons(params: { active?: string; search?: string; page?: nu
 
 function useCouponInvalidation() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: ['coupons'] });
+  return () => {
+    qc.invalidateQueries({ queryKey: ['coupons'] });
+    qc.invalidateQueries({ queryKey: ['coupon'] });
+  };
 }
 
 export function useCreateCoupon() {

@@ -7,7 +7,6 @@ import { KpiCard } from '@/components/ui/KpiCard';
 import { Tabs } from '@/components/ui/Tabs';
 import { Segmented } from '@/components/ui/Segmented';
 import { PaymentsTable } from '@/components/finance/PaymentsTable';
-import { OrderDrawer } from '@/components/finance/OrderDrawer';
 import { formatAmountMinor } from '@/lib/i18n/format';
 import {
   useAdminTransactions,
@@ -39,7 +38,6 @@ export default function PaymentsPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [page, setPage] = useState(1);
-  const [orderId, setOrderId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useAdminTransactions({ kind, status, search, from, to, page });
   const summary = useTransactionsSummary({ from, to });
@@ -138,11 +136,8 @@ export default function PaymentsPage() {
         meta={data?.meta}
         isLoading={isLoading}
         isError={isError}
-        onOpenOrder={setOrderId}
         onPageChange={setPage}
       />
-
-      {orderId && <OrderDrawer orderId={orderId} onClose={() => setOrderId(null)} />}
     </div>
   );
 }

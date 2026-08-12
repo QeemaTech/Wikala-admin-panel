@@ -39,20 +39,48 @@ export const KIND_LABELS: Record<TransactionKind, string> = {
   BOOST: 'تعزيز',
 };
 
-/** What a transaction was for, resolved server-side to avoid an N+1. */
+/**
+ * What a transaction was for, resolved server-side to avoid an N+1. The list
+ * carries the identifying fields; the detail endpoint fills in the rest.
+ */
 export interface TransactionReference {
   type: TransactionKind;
   label: string;
+  // ORDER
   orderId?: string;
   orderStatus?: string;
+  paymentStatus?: string;
   itemCount?: number;
+  // SUBSCRIPTION
+  subscriptionId?: string;
   subscriptionStatus?: string;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  nextRenewal?: string | null;
+  adQuotaTotal?: number;
+  adQuotaUsed?: number;
+  // BOOST
+  boostId?: string;
+  boostStatus?: string;
   adId?: string | null;
+  adTitle?: string | null;
+  startsAt?: string | null;
+  expiresAt?: string | null;
 }
 
-/** A row on the unified admin Payments list. */
+/** The payer. `email` and `role` are only populated by the detail endpoint. */
+export interface TransactionUser {
+  id: string;
+  name: string;
+  phone: string;
+  avatarUrl: string | null;
+  email?: string | null;
+  role?: string;
+}
+
+/** A row on the unified admin Payments list, and the detail page's payload. */
 export interface AdminTransactionDTO extends TransactionDTO {
-  user: { id: string; name: string; phone: string; avatarUrl: string | null } | null;
+  user: TransactionUser | null;
   reference: TransactionReference | null;
 }
 
@@ -102,6 +130,16 @@ export function useAdminTransactions(params: AdminTransactionParams = {}) {
       get<{ items: AdminTransactionDTO[]; meta: AdminTransactionsMeta }>(
         `/admin/transactions${qs({ ...params, page: params.page })}`,
       ),
+    staleTime: 30_000,
+  });
+}
+
+/** One transaction with a fully-resolved reference (`GET /admin/transactions/:id`). */
+export function useTransaction(id: string | null) {
+  return useQuery({
+    queryKey: ['admin-transaction', id],
+    queryFn: () => get<AdminTransactionDTO>(`/admin/transactions/${id}`),
+    enabled: !!id,
     staleTime: 30_000,
   });
 }
