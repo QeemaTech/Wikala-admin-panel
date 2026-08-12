@@ -1,8 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { get } from '@/lib/api/client';
 
+/** Which catalogue a category tree belongs to (Contract — CategoryScope). */
+export type CategoryScope = 'ADS' | 'PRODUCTS';
+
 export interface CategoryDTO {
   id: string;
+  scope: CategoryScope;
   slug: string;
   nameAr: string;
   nameEn: string;
@@ -11,6 +15,8 @@ export interface CategoryDTO {
   parentId: string | null;
   order: number;
   adCount: number;
+  /** Scope-aware count: ads for `ADS`, products for `PRODUCTS`. */
+  itemCount: number;
   subCount: number;
   fieldCount: number;
   isActive: boolean;
@@ -32,10 +38,10 @@ export interface CategoryFieldDTO {
   is_active: boolean;
 }
 
-export function useCategories() {
+export function useCategories(scope: CategoryScope = 'ADS') {
   return useQuery({
-    queryKey: ['categories'],
-    queryFn: () => get<{ items: CategoryDTO[] }>('/admin/categories'),
+    queryKey: ['categories', scope],
+    queryFn: () => get<{ items: CategoryDTO[] }>(`/admin/categories?scope=${scope}`),
     staleTime: 60_000,
   });
 }

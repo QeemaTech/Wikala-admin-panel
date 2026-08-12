@@ -2,7 +2,8 @@ import { post } from './client';
 
 export type MediaContext =
   | 'ADS_MEDIA' | 'USERS_AVATAR' | 'VERIFICATION_ID_PHOTO' | 'VERIFICATION_SELFIE'
-  | 'STORES_LOGO' | 'STORES_BANNER' | 'BANNERS' | 'CHAT_ATTACHMENT_IMAGE' | 'REPORTS_EVIDENCE';
+  | 'STORES_LOGO' | 'STORES_BANNER' | 'BANNERS' | 'CHAT_ATTACHMENT_IMAGE' | 'REPORTS_EVIDENCE'
+  | 'PRODUCTS_MEDIA';
 
 export interface SignedUploadParams {
   cloudName: string;

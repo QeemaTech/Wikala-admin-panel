@@ -7,7 +7,7 @@ import { FieldWrapper, Input } from '@/components/forms/Field';
 import { Icon } from '@/components/ui/Icon';
 import { IconPicker } from './IconPicker';
 import { useCreateCategory, useUpdateCategory } from '@/features/categories/use-category-mutations';
-import type { CategoryDTO } from '@/features/categories/use-categories';
+import type { CategoryDTO, CategoryScope } from '@/features/categories/use-categories';
 
 const schema = z.object({
   nameAr: z.string().min(1, 'الاسم العربي مطلوب'),
@@ -23,10 +23,12 @@ type FormValues = z.infer<typeof schema>;
 interface CategoryFormProps {
   category?: CategoryDTO;
   parentId?: string;
+  /** Catalogue the new root belongs to; ignored for children (they inherit). */
+  scope?: CategoryScope;
   onClose: () => void;
 }
 
-export function CategoryForm({ category, parentId, onClose }: CategoryFormProps) {
+export function CategoryForm({ category, parentId, scope = 'ADS', onClose }: CategoryFormProps) {
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const isEdit = !!category;
@@ -54,6 +56,7 @@ export function CategoryForm({ category, parentId, onClose }: CategoryFormProps)
         ...values,
         slug: values.slug || undefined,
         parentId: parentId ?? null,
+        scope,
       });
     }
     onClose();

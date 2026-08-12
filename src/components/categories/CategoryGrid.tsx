@@ -9,16 +9,22 @@ import { useDeleteCategory } from '@/features/categories/use-category-mutations'
 import { CategoryForm } from './CategoryForm';
 import { FieldSchemaTable } from './FieldSchemaTable';
 import { CategoryAnalyticsDrawer } from './CategoryAnalyticsDrawer';
-import type { CategoryDTO } from '@/features/categories/use-categories';
+import type { CategoryDTO, CategoryScope } from '@/features/categories/use-categories';
+
+/** What the per-category count means in this scope — ads vs. catalogue products. */
+const countLabel = (scope: CategoryScope) => (scope === 'PRODUCTS' ? 'المنتجات' : 'الإعلانات');
+const countCaption = (scope: CategoryScope) =>
+  scope === 'PRODUCTS' ? 'منتجات منشورة' : 'إعلانات نشطة';
 
 // ── Sub-category manager panel ───────────────────────────────────────────────
 
 interface SubCategoryManagerProps {
   parent: CategoryDTO;
+  scope: CategoryScope;
   onClose: () => void;
 }
 
-function SubCategoryManager({ parent, onClose }: SubCategoryManagerProps) {
+function SubCategoryManager({ parent, scope, onClose }: SubCategoryManagerProps) {
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [expandedL2Id, setExpandedL2Id] = useState<string | null>(null);
@@ -75,7 +81,7 @@ function SubCategoryManager({ parent, onClose }: SubCategoryManagerProps) {
             <thead>
               <tr className="border-b border-border bg-surface">
                 <th className="px-3 py-2.5 text-start font-medium text-muted">الاسم</th>
-                <th className="px-3 py-2.5 text-start font-medium text-muted">الإعلانات</th>
+                <th className="px-3 py-2.5 text-start font-medium text-muted">{countLabel(scope)}</th>
                 <th className="px-3 py-2.5 text-start font-medium text-muted">الترتيب</th>
                 <th className="px-3 py-2.5 text-start font-medium text-muted">الحالة</th>
                 <th className="px-3 py-2.5" />
@@ -97,7 +103,7 @@ function SubCategoryManager({ parent, onClose }: SubCategoryManagerProps) {
                       </div>
                     </td>
                     <td className="px-3 py-2.5 font-mono text-[12px] text-ink">
-                      {formatNumber(sub.adCount)}
+                      {formatNumber(sub.itemCount ?? sub.adCount)}
                     </td>
                     <td className="px-3 py-2.5 font-mono text-[12px] text-muted">
                       {formatNumber(sub.order)}
@@ -171,7 +177,7 @@ function SubCategoryManager({ parent, onClose }: SubCategoryManagerProps) {
                                         <span className="ms-1.5 font-mono text-[11px] text-muted">{l3.nameEn}</span>
                                       )}
                                     </td>
-                                    <td className="px-3 py-2 font-mono text-muted">{formatNumber(l3.adCount)}</td>
+                                    <td className="px-3 py-2 font-mono text-muted">{formatNumber(l3.itemCount ?? l3.adCount)}</td>
                                     <td className="px-3 py-2">
                                       {l3.isActive
                                         ? <Chip tone="green" dot>نشط</Chip>
@@ -234,12 +240,13 @@ function SubCategoryManager({ parent, onClose }: SubCategoryManagerProps) {
 
 interface CategoryTileProps {
   category: CategoryDTO;
+  scope: CategoryScope;
   onEdit: (c: CategoryDTO) => void;
   onManageSubs: (c: CategoryDTO) => void;
   onAnalytics: (c: CategoryDTO) => void;
 }
 
-function CategoryTile({ category, onEdit, onManageSubs, onAnalytics }: CategoryTileProps) {
+function CategoryTile({ category, scope, onEdit, onManageSubs, onAnalytics }: CategoryTileProps) {
   const [showFields, setShowFields] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const deleteCategory = useDeleteCategory();
@@ -309,9 +316,9 @@ function CategoryTile({ category, onEdit, onManageSubs, onAnalytics }: CategoryT
         <div className="grid grid-cols-3 divide-x divide-x-reverse divide-border border-t border-border bg-surface/50">
           <div className="px-3 py-2.5 text-center">
             <p className="font-mono text-[13px] font-semibold" style={{ color: category.color }}>
-              {formatNumber(category.adCount)}
+              {formatNumber(category.itemCount ?? category.adCount)}
             </p>
-            <p className="text-[11px] text-muted">إعلانات نشطة</p>
+            <p className="text-[11px] text-muted">{countCaption(scope)}</p>
           </div>
           <div className="px-3 py-2.5 text-center">
             <p className="font-mono text-[13px] font-semibold text-ink">
@@ -364,9 +371,10 @@ function CategoryTile({ category, onEdit, onManageSubs, onAnalytics }: CategoryT
 
 interface CategoryGridProps {
   categories: CategoryDTO[];
+  scope?: CategoryScope;
 }
 
-export function CategoryGrid({ categories }: CategoryGridProps) {
+export function CategoryGrid({ categories, scope = 'ADS' }: CategoryGridProps) {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [managingSubsForId, setManagingSubsForId] = useState<string | null>(null);
   const [analyticsForId, setAnalyticsForId] = useState<string | null>(null);
@@ -387,6 +395,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           <CategoryTile
             key={cat.id}
             category={cat}
+            scope={scope}
             onEdit={(c) => setEditingCategoryId(c.id)}
             onManageSubs={handleManageSubs}
             onAnalytics={(c) => setAnalyticsForId(c.id)}
@@ -396,6 +405,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
         {managingSubsFor && (
           <SubCategoryManager
             parent={managingSubsFor}
+            scope={scope}
             onClose={() => setManagingSubsForId(null)}
           />
         )}

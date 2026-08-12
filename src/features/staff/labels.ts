@@ -40,6 +40,7 @@ export const STAFF_PERMISSIONS: { value: StaffPermission; label: string }[] = [
   { value: 'CHAT_SAFETY', label: 'حماية المحادثات' },
   { value: 'AI_RULES', label: 'قواعد الذكاء الاصطناعي' },
   { value: 'FINANCE', label: 'المالية' },
+  { value: 'PRODUCTS', label: 'المنتجات' },
 ];
 
 const STATUS_META: Record<StaffStatus, { label: string; tone: 'green' | 'amber' | 'red' | 'gray' }> = {

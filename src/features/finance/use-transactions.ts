@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { get } from '@/lib/api/client';
 
-export type TransactionKind = 'BOOST' | 'SUBSCRIPTION';
+export type TransactionKind = 'BOOST' | 'SUBSCRIPTION' | 'ORDER';
 export type TransactionStatus = 'PENDING' | 'CAPTURED' | 'FAILED' | 'REFUNDED';
 
 /** TransactionDTO — Contract §8 Payments. */
@@ -30,6 +30,89 @@ export interface TransactionsPage {
 interface TransactionsEnvelope {
   items: TransactionDTO[];
   meta: { page: number; pageSize: number; total: number; pages: number };
+}
+
+/** Arabic label per ledger kind — shared by every payments surface. */
+export const KIND_LABELS: Record<TransactionKind, string> = {
+  SUBSCRIPTION: 'اشتراك',
+  ORDER: 'طلب منتجات',
+  BOOST: 'تعزيز',
+};
+
+/** What a transaction was for, resolved server-side to avoid an N+1. */
+export interface TransactionReference {
+  type: TransactionKind;
+  label: string;
+  orderId?: string;
+  orderStatus?: string;
+  itemCount?: number;
+  subscriptionStatus?: string;
+  adId?: string | null;
+}
+
+/** A row on the unified admin Payments list. */
+export interface AdminTransactionDTO extends TransactionDTO {
+  user: { id: string; name: string; phone: string; avatarUrl: string | null } | null;
+  reference: TransactionReference | null;
+}
+
+export interface AdminTransactionsMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  pages: number;
+}
+
+export interface TransactionsSummary {
+  captured: { totalMinor: number; count: number };
+  pending: { totalMinor: number; count: number };
+  refunded: { totalMinor: number; count: number };
+  failed: { totalMinor: number; count: number };
+  byKind: Record<TransactionKind, { totalMinor: number; count: number }>;
+  currency: string;
+}
+
+export interface AdminTransactionParams {
+  kind?: TransactionKind | '';
+  status?: TransactionStatus | '';
+  search?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+}
+
+function qs(params: Record<string, string | number | undefined>): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') sp.set(k, String(v));
+  }
+  const s = sp.toString();
+  return s ? `?${s}` : '';
+}
+
+/**
+ * The unified Payments ledger — plan subscriptions, product orders and boosts
+ * in one list (`GET /admin/transactions`). Tabs are a `kind` filter, not
+ * separate endpoints.
+ */
+export function useAdminTransactions(params: AdminTransactionParams = {}) {
+  return useQuery({
+    queryKey: ['admin-transactions', params],
+    queryFn: () =>
+      get<{ items: AdminTransactionDTO[]; meta: AdminTransactionsMeta }>(
+        `/admin/transactions${qs({ ...params, page: params.page })}`,
+      ),
+    staleTime: 30_000,
+  });
+}
+
+/** KPI strip for the Payments page (`GET /admin/transactions/summary`). */
+export function useTransactionsSummary(params: { from?: string; to?: string } = {}) {
+  return useQuery({
+    queryKey: ['admin-transactions-summary', params],
+    queryFn: () => get<TransactionsSummary>(`/admin/transactions/summary${qs(params)}`),
+    staleTime: 60_000,
+  });
 }
 
 /**

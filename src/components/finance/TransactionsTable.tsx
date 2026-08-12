@@ -13,6 +13,7 @@ import {
 const KIND_LABEL: Record<TransactionKind, string> = {
   BOOST: 'تعزيز',
   SUBSCRIPTION: 'اشتراك',
+  ORDER: 'طلب منتجات',
 };
 
 const STATUS: Record<TransactionStatus, { label: string; tone: 'green' | 'red' | 'amber' | 'gray' }> = {

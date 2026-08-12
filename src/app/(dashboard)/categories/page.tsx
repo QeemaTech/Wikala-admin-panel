@@ -3,14 +3,22 @@
 import { useState } from 'react';
 import { PageHead } from '@/components/ui/PageHead';
 import { Icon } from '@/components/ui/Icon';
+import { Tabs } from '@/components/ui/Tabs';
 import { CategoryGrid } from '@/components/categories/CategoryGrid';
 import { CategoryForm } from '@/components/categories/CategoryForm';
 import { ReorderPanel } from '@/components/categories/ReorderPanel';
-import { useCategories } from '@/features/categories/use-categories';
+import { useCategories, type CategoryScope } from '@/features/categories/use-categories';
 import { formatNumber } from '@/lib/i18n/format';
 
+/** Two independent taxonomies live in one collection, split by `scope`. */
+const SCOPE_TABS = [
+  { id: 'ADS', label: 'فئات الإعلانات' },
+  { id: 'PRODUCTS', label: 'فئات المنتجات' },
+];
+
 export default function CategoriesPage() {
-  const { data, isLoading, isError } = useCategories();
+  const [scope, setScope] = useState<CategoryScope>('ADS');
+  const { data, isLoading, isError } = useCategories(scope);
   const [showAdd, setShowAdd] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
 
@@ -56,6 +64,15 @@ export default function CategoriesPage() {
         }
       />
 
+      <Tabs
+        items={SCOPE_TABS}
+        value={scope}
+        onChange={(id) => {
+          setScope(id as CategoryScope);
+          setReorderMode(false);
+        }}
+      />
+
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-pulse">
           {[...Array(6)].map((_, i) => (
@@ -68,11 +85,11 @@ export default function CategoriesPage() {
           onDone={() => setReorderMode(false)}
         />
       ) : (
-        <CategoryGrid categories={rootCategories} />
+        <CategoryGrid categories={rootCategories} scope={scope} />
       )}
 
       {showAdd && (
-        <CategoryForm onClose={() => setShowAdd(false)} />
+        <CategoryForm scope={scope} onClose={() => setShowAdd(false)} />
       )}
     </div>
   );

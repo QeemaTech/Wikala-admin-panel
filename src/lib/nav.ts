@@ -120,6 +120,21 @@ export const NAV_GROUPS: NavGroup[] = [
         permission: 'BANNERS',
       },
       { id: 'flash', label: 'العروض الفلاش', href: '/flash', icon: 'bolt', crumb: 'العروض الفلاش', permission: 'FLASH_SALES' },
+      {
+        id: 'products',
+        label: 'المنتجات',
+        href: '/products',
+        icon: 'archive',
+        crumb: 'المنتجات',
+        permission: 'PRODUCTS',
+      },
+    ],
+  },
+  {
+    group: 'المالية',
+    items: [
+      { id: 'payments', label: 'المدفوعات', href: '/payments', icon: 'wallet', crumb: 'المدفوعات', permission: 'FINANCE' },
+      { id: 'coupons', label: 'كوبونات الخصم', href: '/coupons', icon: 'ticket', crumb: 'كوبونات الخصم', permission: 'FINANCE' },
     ],
   },
   {

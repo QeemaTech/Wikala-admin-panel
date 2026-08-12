@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { post, patch, del } from '@/lib/api/client';
-import type { CategoryDTO } from './use-categories';
+import type { CategoryDTO, CategoryScope } from './use-categories';
 
 interface CreateCategoryPayload {
   nameAr: string;
+  /** Roots only — children inherit the parent's scope server-side. */
+  scope?: CategoryScope;
   nameEn?: string;
   slug?: string;
   glyph?: string;

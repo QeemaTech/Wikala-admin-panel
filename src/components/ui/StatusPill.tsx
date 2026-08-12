@@ -18,6 +18,21 @@ const STATUS_MAP: Record<string, { label: string; tone: ChipTone }> = {
   OPEN: { label: 'مفتوح', tone: 'amber' },
   RESOLVED: { label: 'تم الحل', tone: 'green' },
   DISMISSED: { label: 'مُغلق', tone: 'gray' },
+  // Products
+  DRAFT: { label: 'مسودة', tone: 'gray' },
+  HIDDEN: { label: 'مخفي', tone: 'gray' },
+  OUT_OF_STOCK: { label: 'نفدت الكمية', tone: 'red' },
+  // Orders
+  PENDING_PAYMENT: { label: 'بانتظار الدفع', tone: 'amber' },
+  CONFIRMED: { label: 'مؤكَّد', tone: 'blue' },
+  SHIPPED: { label: 'تم الشحن', tone: 'violet' },
+  DELIVERED: { label: 'تم التسليم', tone: 'green' },
+  CANCELLED: { label: 'ملغي', tone: 'gray' },
+  REFUNDED: { label: 'مُسترجع', tone: 'gray' },
+  // Order payment status
+  UNPAID: { label: 'غير مدفوع', tone: 'amber' },
+  PAID: { label: 'مدفوع', tone: 'green' },
+  FAILED: { label: 'فشل', tone: 'red' },
   active: { label: 'نشط', tone: 'green' },
   suspended: { label: 'موقوف', tone: 'red' },
   pending_2fa: { label: 'في الانتظار', tone: 'amber' },
