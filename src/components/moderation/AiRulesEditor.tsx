@@ -22,6 +22,10 @@ const schema = z
       z.object({
         pattern: z.string().min(1, 'مطلوب'),
         action: z.enum(['FLAG', 'REJECT']),
+        // Carried through untouched. Zod strips unknown keys, so without this
+        // the first save from this dialog would silently drop the label off
+        // every built-in rule and leave moderators reading raw regex.
+        reason: z.string().nullish(),
       }),
     ),
     imageRules: z.array(
@@ -171,7 +175,7 @@ export function AiRulesEditor({ onClose }: AiRulesEditorProps) {
                   <h3 className="text-[13.5px] font-semibold text-ink">قواعد النص</h3>
                   <button
                     type="button"
-                    onClick={() => textFields.append({ pattern: '', action: 'FLAG' })}
+                    onClick={() => textFields.append({ pattern: '', action: 'FLAG', reason: null })}
                     className="flex items-center gap-1 rounded-[8px] border border-border px-3 py-1.5 text-[12px] font-medium text-ink hover:bg-surface-2"
                   >
                     <Icon name="plus" size={13} /> إضافة قاعدة
@@ -180,11 +184,18 @@ export function AiRulesEditor({ onClose }: AiRulesEditorProps) {
                 <div className="space-y-2">
                   {textFields.fields.map((field, i) => (
                     <div key={field.id} className="flex items-start gap-2">
-                      <input
-                        {...register(`textRules.${i}.pattern`)}
-                        placeholder="النمط (regex أو نص)"
-                        className="flex-1 rounded-[8px] border border-border bg-surface px-3 py-2 text-[13px] text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10"
-                      />
+                      <div className="flex-1">
+                        <input
+                          {...register(`textRules.${i}.pattern`)}
+                          placeholder="النمط (regex أو نص)"
+                          className="w-full rounded-[8px] border border-border bg-surface px-3 py-2 font-mono text-[12.5px] text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10"
+                        />
+                        {/* The regex is unreadable at a glance; the label is what
+                            a moderator recognises when it appears on a flagged ad. */}
+                        {field.reason && (
+                          <p className="mt-1 text-[11px] text-muted">{field.reason}</p>
+                        )}
+                      </div>
                       <select
                         {...register(`textRules.${i}.action`)}
                         className="rounded-[8px] border border-border bg-surface px-2 py-2 text-[12.5px] text-ink outline-none focus:border-brand"
@@ -203,7 +214,9 @@ export function AiRulesEditor({ onClose }: AiRulesEditorProps) {
                     </div>
                   ))}
                   {textFields.fields.length === 0 && (
-                    <p className="text-[12.5px] text-muted">لا توجد قواعد نصية حالياً</p>
+                    <p className="text-[12.5px] text-red">
+                      لا توجد قواعد نصية حالياً — لا يوجد فحص تلقائي للنصوص.
+                    </p>
                   )}
                 </div>
               </div>

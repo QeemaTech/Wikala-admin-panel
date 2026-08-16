@@ -4,6 +4,13 @@ import { get, put } from '@/lib/api/client';
 export interface TextRule {
   pattern: string;
   action: 'FLAG' | 'REJECT';
+  /**
+   * Human-readable label shown to moderators instead of the raw regex, e.g.
+   * WALLET_TRANSFER_REQUEST. Optional: rules added by hand before this existed
+   * have none. Preserved on save so editing one rule cannot silently strip the
+   * labels off the others.
+   */
+  reason?: string | null;
 }
 
 export interface ImageRule {
