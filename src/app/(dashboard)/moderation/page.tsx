@@ -10,6 +10,7 @@ import { ModerationQueue } from '@/components/moderation/ModerationQueue';
 import { BulkApproveBar } from '@/components/moderation/BulkApproveBar';
 import { AiRulesEditor } from '@/components/moderation/AiRulesEditor';
 import { AdvancedFilterPanel } from '@/components/moderation/AdvancedFilterPanel';
+import { AdReviewsPanel } from '@/components/moderation/AdReviewsPanel';
 import { SearchFilterBar } from '@/components/search/SearchFilterBar';
 import { EMPTY_FILTERS, type SearchFilters } from '@/features/search/use-search-filters';
 import {
@@ -32,7 +33,10 @@ const RISK_OPTIONS = [
 ];
 
 export default function ModerationPage() {
-  const [tab, setTab] = useState<ModerationTab>('QUEUE');
+  // `REVIEWS` is a panel-only tab: it moderates buyer reviews left on ads, not
+  // the ads themselves, so it is not part of the `ModerationTab` union the ad
+  // queue endpoint accepts.
+  const [tab, setTab] = useState<ModerationTab | 'REVIEWS'>('QUEUE');
   const [risk, setRisk] = useState<ModerationRisk>('ALL');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -84,7 +88,7 @@ export default function ModerationPage() {
   }, []);
 
   const handleTabChange = (id: string) => {
-    setTab(id as ModerationTab);
+    setTab(id as ModerationTab | 'REVIEWS');
     setPage(1);
     setSelected(new Set());
   };
@@ -145,12 +149,17 @@ export default function ModerationPage() {
     { id: 'FLAGGED', label: 'مُبلَّغ عنها', count: tabCounts['FLAGGED'] ?? null },
     { id: 'APPROVED', label: 'تمت الموافقة', count: tabCounts['APPROVED'] ?? null },
     { id: 'REJECTED', label: 'مرفوضة', count: tabCounts['REJECTED'] ?? null },
+    { id: 'REVIEWS', label: 'تقييمات الإعلانات', count: null },
   ];
 
   const activeFiltersCount = Object.values(advancedFilters).filter(Boolean).length;
 
+  const showingReviews = tab === 'REVIEWS';
+
   const params = {
-    tab,
+    // Narrowed by `showingReviews` before use — the ad queue endpoint only
+    // accepts the four ModerationTab values.
+    tab: (showingReviews ? 'QUEUE' : tab) as ModerationTab,
     risk,
     search: debouncedSearch || undefined,
     page,
@@ -185,6 +194,9 @@ export default function ModerationPage() {
 
       <Tabs items={tabItems} value={tab} onChange={handleTabChange} />
 
+      {showingReviews ? (
+        <AdReviewsPanel />
+      ) : (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <Segmented
@@ -239,6 +251,7 @@ export default function ModerationPage() {
           onPageChange={setPage}
         />
       </div>
+      )}
 
       <BulkApproveBar selected={selected} onClear={() => setSelected(new Set())} />
 
