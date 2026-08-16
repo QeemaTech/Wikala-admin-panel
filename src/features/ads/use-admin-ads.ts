@@ -22,7 +22,15 @@ export interface AdminAdCard {
   status: AdStatus;
 }
 
-export type AdminAdStatusScope = 'ACTIVE' | 'ARCHIVED' | 'EXPIRED' | 'ALL';
+export type AdminAdStatusScope =
+  | 'ACTIVE'
+  | 'ARCHIVED'
+  | 'EXPIRED'
+  /** Created by the seller but never published — in no moderation queue. */
+  | 'DRAFT'
+  /** PENDING_AI · PENDING_HUMAN · FLAGGED — awaiting or stalled in review. */
+  | 'PENDING'
+  | 'ALL';
 
 export interface AdminAdsResponse {
   items: AdminAdCard[];

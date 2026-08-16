@@ -21,6 +21,8 @@ const VIEW_OPTIONS = [
 ];
 const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'نشطة' },
+  { value: 'PENDING', label: 'قيد المراجعة' },
+  { value: 'DRAFT', label: 'مسودّات' },
   { value: 'ARCHIVED', label: 'مسحوبة' },
   { value: 'ALL', label: 'الكل' },
 ];

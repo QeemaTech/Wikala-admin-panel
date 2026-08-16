@@ -18,6 +18,12 @@ const STATUS_MAP: Record<string, { label: string; tone: ChipTone }> = {
   OPEN: { label: 'مفتوح', tone: 'amber' },
   RESOLVED: { label: 'تم الحل', tone: 'green' },
   DISMISSED: { label: 'مُغلق', tone: 'gray' },
+  // Ads — the pre-publish and in-review states, now reachable from /ads
+  PENDING_AI: { label: 'فحص آلي', tone: 'amber' },
+  PENDING_HUMAN: { label: 'مراجعة بشرية', tone: 'amber' },
+  FLAGGED: { label: 'مُعلَّم', tone: 'red' },
+  ARCHIVED: { label: 'مسحوب', tone: 'gray' },
+  SOLD: { label: 'مُباع', tone: 'teal' },
   // Products
   DRAFT: { label: 'مسودة', tone: 'gray' },
   HIDDEN: { label: 'مخفي', tone: 'gray' },
