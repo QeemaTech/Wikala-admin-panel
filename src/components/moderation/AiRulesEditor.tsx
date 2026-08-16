@@ -188,12 +188,25 @@ export function AiRulesEditor({ onClose }: AiRulesEditorProps) {
                         <input
                           {...register(`textRules.${i}.pattern`)}
                           placeholder="النمط (regex أو نص)"
+                          // A regex is LTR text. Inside this RTL panel the browser
+                          // reorders it bidirectionally — `(\+?20|0020)?` renders as
+                          // `?(0020|20?+\)` at the wrong end of the field, which is
+                          // unreadable and looks like corrupted data. dir="ltr" pins
+                          // it; textAlign keeps it starting at the left edge.
+                          dir="ltr"
+                          style={{ textAlign: 'left' }}
+                          spellCheck={false}
+                          autoComplete="off"
+                          autoCapitalize="off"
+                          autoCorrect="off"
                           className="w-full rounded-[8px] border border-border bg-surface px-3 py-2 font-mono text-[12.5px] text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10"
                         />
                         {/* The regex is unreadable at a glance; the label is what
                             a moderator recognises when it appears on a flagged ad. */}
                         {field.reason && (
-                          <p className="mt-1 text-[11px] text-muted">{field.reason}</p>
+                          <p className="mt-1 text-[11px] text-muted" dir="ltr" style={{ textAlign: 'left' }}>
+                            {field.reason}
+                          </p>
                         )}
                       </div>
                       <select

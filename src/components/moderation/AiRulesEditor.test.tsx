@@ -163,5 +163,19 @@ describe('AiRulesEditor', () => {
       // An empty list means nothing is inspecting ad text — not a neutral state.
       expect(screen.getByText(/لا يوجد فحص تلقائي للنصوص/)).toBeTruthy();
     });
+
+    it('renders the pattern left-to-right so bidi cannot scramble it', () => {
+      vi.mocked(useAiRules).mockImplementation(
+        () => ({ data: withBuiltIns, isLoading: false } as unknown as ReturnType<typeof useAiRules>),
+      );
+      renderWithProviders(<AiRulesEditor onClose={vi.fn()} />);
+
+      // The panel is dir="rtl". A regex is LTR, so without an explicit dir the
+      // browser reorders it: `(\+?20|0020)?` displays as `?(0020|20?+\)` at the
+      // wrong end of the field, which reads like corrupted data.
+      const input = screen.getByPlaceholderText('النمط (regex أو نص)') as HTMLInputElement;
+      expect(input.getAttribute('dir')).toBe('ltr');
+      expect(input.style.textAlign).toBe('left');
+    });
   });
 });
