@@ -31,7 +31,8 @@ export type StaffPermission =
   | 'CHAT_SAFETY'
   | 'AI_RULES'
   | 'FINANCE'
-  | 'PRODUCTS';
+  | 'PRODUCTS'
+  | 'CONTENT_PAGES';
 
 export interface StaffUserDTO {
   id: string;

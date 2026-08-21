@@ -12,6 +12,11 @@ export interface SignedUploadParams {
   timestamp: number;
   folder: string;
   publicId: string;
+  /**
+   * Present when the upload context has eager derivatives (ads, avatars, ...).
+   * It is part of the SIGNED string, so it must be echoed back in the POST.
+   */
+  eager?: string;
   transformation?: string;
   uploadUrl: string;
   maxSizeBytes: number;
@@ -62,6 +67,15 @@ export function uploadToCloudinary(
     form.append('signature', params.signature);
     form.append('public_id', params.publicId);
     form.append('folder', params.folder);
+    // Cloudinary rebuilds the signature from EVERY field in this body except
+    // file/api_key/cloud_name/resource_type/signature. The backend signs
+    // `eager` and `transformation` too, so omitting them here produced a
+    // different hash and a flat 401 Invalid Signature on every panel upload —
+    // the error string even shows the truncated payload it hashed
+    // ("folder=...&public_id=...&timestamp=..." with no eager).
+    // Anything signed must be echoed; anything echoed must be signed.
+    if (params.eager) form.append('eager', params.eager);
+    if (params.transformation) form.append('transformation', params.transformation);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', params.uploadUrl, true);

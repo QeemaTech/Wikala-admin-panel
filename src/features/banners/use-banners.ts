@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getPaged, type PageMeta } from '@/lib/api/client';
+import type { DestinationType } from './use-target-search';
 
 export type BannerStatus = 'DRAFT' | 'LIVE' | 'ENDED';
 
@@ -32,6 +33,15 @@ export const SLOT_LABELS: Record<BannerSlot, string> = {
   CATEGORY_VEHICLES: 'قسم المركبات',
 };
 
+export interface BannerDestination {
+  type: DestinationType;
+  targetId: string | null;
+  targetSlug: string | null;
+  targetLabel: string | null;
+  searchQuery: Record<string, string> | null;
+  url: string | null;
+}
+
 export interface BannerDTO {
   id: string;
   title: string;
@@ -39,7 +49,8 @@ export interface BannerDTO {
   body: string | null;
   ctaText: string;
   imageUrl: string | null;
-  linkUrl: string;
+  linkUrl: string | null;
+  destination: BannerDestination;
   slot: BannerSlot;
   status: BannerStatus;
   startsAt: string | null;

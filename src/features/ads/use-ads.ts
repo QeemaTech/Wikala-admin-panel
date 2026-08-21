@@ -39,6 +39,16 @@ export interface AdModerationBlock {
   decidedAt: string | null;
 }
 
+export interface AdTradeBlock {
+  wantedCategoryIds: string[];
+  wantedDescription: string | null;
+  acceptsCashDifference: boolean;
+  cashDifferenceDirection: 'SELLER_PAYS' | 'BUYER_PAYS' | 'EITHER' | null;
+  maxCashDifferenceMinor: number | null;
+  estimatedValueMinor: number | null;
+  wantedCondition: 'NEW' | 'PRELOVED' | 'REFURBISHED' | 'ANY' | null;
+}
+
 export interface AdAdminDTO {
   id: string;
   slug: string;
@@ -65,6 +75,7 @@ export interface AdAdminDTO {
   dedupHash: string | null;
   rejectionReason: string | null;
   moderation: AdModerationBlock;
+  trade?: AdTradeBlock | null;
 }
 
 export interface ModerationItemDTO {

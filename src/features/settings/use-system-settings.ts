@@ -72,3 +72,27 @@ export function useUpdateSystemSettings() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['system-settings'] }),
   });
 }
+
+export interface OtpChannelStatus {
+  channel: 'WHATSAPP' | 'SMS' | 'EMAIL' | 'CALL';
+  /** Whether real provider credentials are present. */
+  configured: boolean;
+  provider: 'TWILIO' | 'WABA' | 'SMTP' | 'STUB';
+  /** LIVE actually delivers; STUB logs and throws the code away. */
+  mode: 'LIVE' | 'STUB';
+}
+
+/**
+ * `GET /admin/settings/otp-status` — what each channel is really wired to.
+ *
+ * Distinct from the `otpChannels` toggles: a channel can be switched on and
+ * still deliver nothing because nobody supplied the credentials.
+ */
+export function useOtpStatus() {
+  return useQuery({
+    queryKey: ['otp-status'],
+    queryFn: () =>
+      get<{ channels: OtpChannelStatus[] }>('/admin/settings/otp-status').then((r) => r.channels),
+    staleTime: 60_000,
+  });
+}

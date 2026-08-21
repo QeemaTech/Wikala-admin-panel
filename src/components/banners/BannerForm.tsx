@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ChangeEvent } from 'react';
+import { useState, useMemo, type ChangeEvent } from 'react';
 import { z } from 'zod';
 import { useZodForm, applyServerErrors } from '@/lib/forms/use-zod-form';
 import { toDatetimeLocalInput } from '@/lib/i18n/format';
@@ -8,9 +8,20 @@ import { FieldWrapper, Input, Textarea, Select } from '@/components/forms/Field'
 import { Icon } from '@/components/ui/Icon';
 import { ApiError } from '@/lib/api/errors';
 import { useSignedUpload } from '@/features/media/use-signed-upload';
-import { useCreateBanner, useUpdateBanner } from '@/features/banners/use-banner-mutations';
+import {
+  useCreateBanner,
+  useUpdateBanner,
+  type BannerCreatePayload,
+  type BannerDestinationPayload,
+} from '@/features/banners/use-banner-mutations';
 import { BannerHomePreview } from './BannerHomePreview';
+import { DestinationPicker, type PickedTarget } from './DestinationPicker';
 import { BANNER_SLOTS, SLOT_LABELS, type BannerDTO, type BannerSlot } from '@/features/banners/use-banners';
+import {
+  SEARCHABLE_TYPES,
+  type DestinationType,
+  type TargetSearchResult,
+} from '@/features/banners/use-target-search';
 
 const schema = z
   .object({
@@ -18,7 +29,6 @@ const schema = z
     subtitle: z.string().max(150, 'حتى 150 حرفًا').optional().or(z.literal('')),
     body: z.string().max(500, 'حتى 500 حرف').optional().or(z.literal('')),
     ctaText: z.string().min(1, 'نص الزر مطلوب').max(80, 'حتى 80 حرفًا'),
-    linkUrl: z.string().url('رابط غير صالح (يبدأ بـ http)'),
     slot: z.enum(BANNER_SLOTS as unknown as [BannerSlot, ...BannerSlot[]]),
     startsAt: z.string().optional().or(z.literal('')),
     endsAt: z.string().optional().or(z.literal('')),
@@ -30,6 +40,22 @@ const schema = z
   });
 
 type FormValues = z.output<typeof schema>;
+
+/** Compute a preview of the resolved deep link for display purposes. */
+function computeResolvedLink(destType: DestinationType, target: PickedTarget | null, url: string, pageSlug: string): string | null {
+  const ref = target?.slug || target?.id;
+  switch (destType) {
+    case 'AD': return ref ? `wikala://ads/${ref}` : null;
+    case 'PRODUCT': return ref ? `wikala://products/${ref}` : null;
+    case 'CATEGORY': return ref ? `wikala://categories/${ref}` : null;
+    case 'AUCTION': return ref ? `wikala://auctions/${ref}` : null;
+    case 'PAGE': return pageSlug ? `wikala://page/${pageSlug}` : null;
+    case 'SEARCH': return 'wikala://search';
+    case 'URL': return url || null;
+    case 'NONE': return null;
+    default: return null;
+  }
+}
 
 interface BannerFormProps {
   banner?: BannerDTO | null;
@@ -47,6 +73,27 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Destination state
+  const [destType, setDestType] = useState<DestinationType>(banner?.destination?.type ?? 'URL');
+  const [destTarget, setDestTarget] = useState<PickedTarget | null>(() => {
+    if (banner?.destination && SEARCHABLE_TYPES.includes(banner.destination.type) && banner.destination.targetId) {
+      return {
+        id: banner.destination.targetId,
+        label: banner.destination.targetLabel ?? '',
+        slug: banner.destination.targetSlug ?? null,
+        thumbUrl: null,
+      };
+    }
+    return null;
+  });
+  const [destUrl, setDestUrl] = useState(banner?.destination?.url ?? banner?.linkUrl ?? '');
+  const [destPageSlug, setDestPageSlug] = useState(banner?.destination?.targetSlug ?? '');
+
+  const resolvedLink = useMemo(
+    () => computeResolvedLink(destType, destTarget, destUrl, destPageSlug),
+    [destType, destTarget, destUrl, destPageSlug]
+  );
+
   const { register, handleSubmit, setError, watch, formState: { errors, isSubmitting } } = useZodForm(schema, {
     defaultValues: banner
       ? {
@@ -54,13 +101,12 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
           subtitle: banner.subtitle ?? '',
           body: banner.body ?? '',
           ctaText: banner.ctaText,
-          linkUrl: banner.linkUrl,
           slot: banner.slot,
           startsAt: toDatetimeLocalInput(banner.startsAt),
           endsAt: toDatetimeLocalInput(banner.endsAt),
           order: banner.order,
         }
-      : { title: '', ctaText: 'اطلب الآن', linkUrl: '', slot: 'HOME_TOP', order: 0 },
+      : { title: '', ctaText: 'اطلب الآن', slot: 'HOME_TOP', order: 0 },
   });
 
   const live = watch();
@@ -80,15 +126,37 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
     }
   };
 
+  const handleTargetSelect = (item: TargetSearchResult | null) => {
+    if (item) {
+      setDestTarget({ id: item.id, label: item.label, slug: item.slug, thumbUrl: item.thumbUrl });
+    } else {
+      setDestTarget(null);
+    }
+  };
+
   const onSubmit = handleSubmit(async (v: FormValues) => {
     setSubmitError(null);
-    const payload = {
+
+    // Typed, not `Record<string, unknown>`: the loose record erased the
+    // required `type` field, so the payload only compiled thanks to an
+    // `as never` cast on the create call — which would equally have hidden a
+    // genuinely malformed destination.
+    const destination: BannerDestinationPayload = { type: destType };
+    if (destType === 'URL') {
+      destination.url = destUrl;
+    } else if (SEARCHABLE_TYPES.includes(destType) && destTarget) {
+      destination.targetId = destTarget.id;
+    } else if (destType === 'PAGE') {
+      destination.targetSlug = destPageSlug;
+    }
+
+    const payload: BannerCreatePayload = {
       title: v.title,
       ...(v.subtitle ? { subtitle: v.subtitle } : {}),
       ...(v.body ? { body: v.body } : {}),
       ctaText: v.ctaText,
       ...(image.publicId ? { imageCloudinaryPublicId: image.publicId } : {}),
-      linkUrl: v.linkUrl,
+      destination,
       slot: v.slot,
       ...(v.startsAt ? { startsAt: new Date(v.startsAt).toISOString() } : {}),
       ...(v.endsAt ? { endsAt: new Date(v.endsAt).toISOString() } : {}),
@@ -135,8 +203,20 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
             <FieldWrapper label="نص إضافي" error={errors.body?.message}>
               <Textarea {...register('body')} error={!!errors.body} rows={2} />
             </FieldWrapper>
-            <FieldWrapper label="رابط الوجهة" required error={errors.linkUrl?.message}>
-              <Input {...register('linkUrl')} error={!!errors.linkUrl} dir="ltr" placeholder="https://..." />
+
+            {/* Destination picker replaces the old linkUrl text input */}
+            <FieldWrapper label="رابط الوجهة" required>
+              <DestinationPicker
+                type={destType}
+                onTypeChange={setDestType}
+                target={destTarget}
+                onTargetSelect={handleTargetSelect}
+                url={destUrl}
+                onUrlChange={setDestUrl}
+                pageSlug={destPageSlug}
+                onPageSlugChange={setDestPageSlug}
+                resolvedLink={resolvedLink}
+              />
             </FieldWrapper>
 
             <div className="grid grid-cols-2 gap-3">

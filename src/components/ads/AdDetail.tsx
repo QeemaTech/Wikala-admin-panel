@@ -10,6 +10,7 @@ import { MobilePreviewPane } from '@/components/preview/MobilePreviewPane';
 import { AdStatusTimeline } from './AdStatusTimeline';
 import { AdEditForm } from './AdEditForm';
 import { FavoriteBadge } from './FavoriteBadge';
+import { TradeDataPanel } from './TradeDataPanel';
 import { useCategoryFields } from '@/features/categories/use-categories';
 import { formatNumber } from '@/lib/i18n/format';
 import type { AdAdminDTO } from '@/features/ads/use-ads';
@@ -97,6 +98,12 @@ export function AdDetail({ ad, categoryName, onClose }: AdDetailProps) {
                   </div>
                 ))}
               </dl>
+            </Section>
+          )}
+
+          {ad.type === 'TRADE' && ad.trade && (
+            <Section title="بيانات المقايضة">
+              <TradeDataPanel trade={ad.trade} />
             </Section>
           )}
 

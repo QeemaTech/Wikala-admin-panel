@@ -128,6 +128,14 @@ export const NAV_GROUPS: NavGroup[] = [
         crumb: 'المنتجات',
         permission: 'PRODUCTS',
       },
+      {
+        id: 'content-pages',
+        label: 'الصفحات والمحتوى',
+        href: '/content-pages',
+        icon: 'doc',
+        crumb: 'الصفحات والمحتوى',
+        permission: 'CONTENT_PAGES',
+      },
     ],
   },
   {
