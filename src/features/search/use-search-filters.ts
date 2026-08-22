@@ -11,6 +11,9 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 export interface SearchFilters {
   q: string;
   categoryId: string | null;
+  /** SELL · RENT · TRADE · AUCTION. Backed by `?type=` on the search and
+   *  admin-ads endpoints, which supported it long before any UI exposed it. */
+  type: string | null;
   condition: string[];
   brand: string[];
   governorate: string | null;
@@ -25,6 +28,7 @@ export const DEFAULT_SORT = 'boostRank';
 export const EMPTY_FILTERS: SearchFilters = {
   q: '',
   categoryId: null,
+  type: null,
   condition: [],
   brand: [],
   governorate: null,
@@ -46,6 +50,7 @@ export function isEmptyFilters(f: SearchFilters): boolean {
   return (
     !f.q.trim() &&
     !f.categoryId &&
+    !f.type &&
     f.condition.length === 0 &&
     f.brand.length === 0 &&
     !f.governorate &&
@@ -68,6 +73,7 @@ export function composeSearchQuery(
   const q = new URLSearchParams();
   if (f.q.trim()) q.set('q', f.q.trim());
   if (f.categoryId) q.set('categoryId', f.categoryId);
+  if (f.type) q.set('type', f.type);
   f.condition.forEach((c) => q.append('condition', c));
   f.brand.forEach((b) => q.append('brand', b));
   if (f.governorate) q.set('governorate', f.governorate);
@@ -89,6 +95,7 @@ export function parseSearchParams(sp: URLSearchParams): SearchFilters {
   return {
     q: sp.get('q') ?? '',
     categoryId: sp.get('categoryId') || null,
+    type: sp.get('type') || null,
     condition: sp.getAll('condition'),
     brand: sp.getAll('brand'),
     governorate: sp.get('governorate') || null,

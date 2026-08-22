@@ -118,3 +118,31 @@ export function useDeleteAd() {
     onSuccess: (_, adId) => invalidateAds(qc, adId),
   });
 }
+
+export interface TodaysDealPayload {
+  isTodaysDeal: boolean;
+  /** Omit for "featured until I unfeature it". */
+  dealEndsAt?: string | null;
+  dealStartsAt?: string | null;
+  /** The "was" price for a strike-through. Must exceed the asking price. */
+  originalPriceMinor?: number | null;
+}
+
+/**
+ * Feature (or unfeature) an ad on the app's Today's Deal rail.
+ *
+ * Editorial, not a boost: a boost is something a seller pays for, so reusing it
+ * here would let money buy a slot on what is meant to be a recommendation.
+ *
+ * The backend refuses a non-ACTIVE ad (409), a past `dealEndsAt` (422) and an
+ * `originalPriceMinor` at or below the current price (422) — that last one
+ * would render a strike-through that reads as a price *rise*.
+ */
+export function useSetTodaysDeal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ adId, payload }: { adId: string; payload: TodaysDealPayload }) =>
+      patch<AdAdminDTO>(`/admin/ads/${adId}/todays-deal`, payload),
+    onSuccess: (_, { adId }) => invalidateAds(qc, adId),
+  });
+}

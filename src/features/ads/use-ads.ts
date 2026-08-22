@@ -49,6 +49,22 @@ export interface AdTradeBlock {
   wantedCondition: 'NEW' | 'PRELOVED' | 'REFURBISHED' | 'ANY' | null;
 }
 
+/**
+ * Editorial Today's-Deal state for an ad, as CONFIGURED by staff.
+ *
+ * Not the same as "live on the rail right now": the app computes liveness from
+ * the clock, so a featured ad whose window has closed is still `isTodaysDeal:
+ * true` here. The panel needs that distinction to show "featured, expired"
+ * rather than silently rendering it as unfeatured — otherwise staff re-feature
+ * something that is already flagged and wonder why nothing changes.
+ */
+export interface AdTodaysDealBlock {
+  isTodaysDeal: boolean;
+  dealStartsAt: string | null;
+  dealEndsAt: string | null;
+  originalPriceMinor: number | null;
+}
+
 export interface AdAdminDTO {
   id: string;
   slug: string;
@@ -76,6 +92,7 @@ export interface AdAdminDTO {
   rejectionReason: string | null;
   moderation: AdModerationBlock;
   trade?: AdTradeBlock | null;
+  todaysDeal?: AdTodaysDealBlock | null;
 }
 
 export interface ModerationItemDTO {

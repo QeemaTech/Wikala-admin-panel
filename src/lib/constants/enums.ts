@@ -103,3 +103,23 @@ export function conditionLabel(value: string | null | undefined): string {
   if (!value) return '—';
   return CONDITION_LABELS[value as AdCondition] ?? value;
 }
+
+/**
+ * Ad types. An AUCTION and a TRADE behave nothing like a plain SELL — different
+ * flows, different screens, different moderation concerns — but the shared card
+ * DTO carried no `type`, so every tile in the admin grid looked the same.
+ */
+export const AD_TYPES = ['SELL', 'RENT', 'TRADE', 'AUCTION'] as const;
+export type AdTypeValue = (typeof AD_TYPES)[number];
+
+export const AD_TYPE_LABELS: Record<AdTypeValue, string> = {
+  SELL: 'بيع',
+  RENT: 'إيجار',
+  TRADE: 'مبادلة',
+  AUCTION: 'مزاد',
+};
+
+export function adTypeLabel(value: string | null | undefined): string {
+  if (!value) return '—';
+  return AD_TYPE_LABELS[value as AdTypeValue] ?? value;
+}

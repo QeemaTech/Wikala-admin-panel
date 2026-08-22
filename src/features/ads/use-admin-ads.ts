@@ -5,7 +5,7 @@ import { get } from '@/lib/api/client';
 import type { PageMeta } from '@/lib/api/client';
 import { composeSearchQuery, type SearchFilters } from '@/features/search/use-search-filters';
 import type { SearchFacets } from '@/features/search/use-search';
-import type { AdStatus } from './use-ads';
+import type { AdStatus, AdType, AdTodaysDealBlock } from './use-ads';
 
 /** Admin ad list row — AdCardDTO + status (so the grid picks the right action). */
 export interface AdminAdCard {
@@ -20,6 +20,11 @@ export interface AdminAdCard {
   condition: string | null;
   publishedAt: string | null;
   status: AdStatus;
+  /** SELL · RENT · TRADE · AUCTION — without it the grid cannot tell an
+   *  auction from a swap from a plain listing. */
+  type?: AdType;
+  /** Editorial Today's-Deal state as configured (not "live right now"). */
+  todaysDeal?: AdTodaysDealBlock | null;
 }
 
 export type AdminAdStatusScope =

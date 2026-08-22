@@ -12,7 +12,8 @@ import { AdLocationMap } from '@/components/map/AdLocationMap';
 import { useSearchFilters } from '@/features/search/use-search-filters';
 import { useAdminAds, type AdminAdStatusScope, type AdminAdCard } from '@/features/ads/use-admin-ads';
 import { useAdDetail } from '@/features/ads/use-ad-detail';
-import { useTakedownAd, useRestoreAd, useDeleteAd } from '@/features/ads/use-ad-actions';
+import { useTakedownAd, useRestoreAd, useDeleteAd, useSetTodaysDeal } from '@/features/ads/use-ad-actions';
+import { AD_TYPES, adTypeLabel } from '@/lib/constants/enums';
 import { formatNumber } from '@/lib/i18n/format';
 
 const VIEW_OPTIONS = [
@@ -25,6 +26,13 @@ const STATUS_OPTIONS = [
   { value: 'DRAFT', label: 'مسودّات' },
   { value: 'ARCHIVED', label: 'مسحوبة' },
   { value: 'ALL', label: 'الكل' },
+];
+
+// The API has always accepted ?type=; nothing in the panel ever sent it, so
+// auctions and swaps could only be found by scrolling the whole list.
+const TYPE_OPTIONS = [
+  { value: '', label: 'كل الأنواع' },
+  ...AD_TYPES.map((t) => ({ value: t, label: adTypeLabel(t) })),
 ];
 
 const PAGE_SIZE = 24;
@@ -42,7 +50,8 @@ export default function AdsPage() {
   const takedown = useTakedownAd();
   const restore = useRestoreAd();
   const del = useDeleteAd();
-  const busy = takedown.isPending || restore.isPending || del.isPending;
+  const setDeal = useSetTodaysDeal();
+  const busy = takedown.isPending || restore.isPending || del.isPending || setDeal.isPending;
 
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -62,6 +71,49 @@ export default function AdsPage() {
     if (window.confirm(`حذف الإعلان «${ad.title}» نهائيًا؟ لا يمكن التراجع.`)) del.mutate(ad.id);
   };
 
+  const onToggleDeal = (ad: AdminAdCard) => {
+    const featured = !!ad.todaysDeal?.isTodaysDeal;
+
+    if (featured) {
+      if (!window.confirm(`إزالة «${ad.title}» من صفقات اليوم؟`)) return;
+      setDeal.mutate({ adId: ad.id, payload: { isTodaysDeal: false } });
+      return;
+    }
+
+    // Days rather than a datetime picker: the whole interaction is "feature
+    // this for a while", and an empty answer means "until I unfeature it",
+    // which the backend accepts as a null window.
+    const raw = window.prompt(
+      `إضافة «${ad.title}» إلى صفقات اليوم.\nلكم يوم يستمر العرض؟ (اتركه فارغًا لعرض مفتوح)`,
+      '1',
+    );
+    if (raw === null) return; // cancelled
+
+    const days = raw.trim() === '' ? null : Number(raw.trim());
+    if (days !== null && (!Number.isFinite(days) || days <= 0)) {
+      window.alert('عدد الأيام غير صالح');
+      return;
+    }
+
+    setDeal.mutate(
+      {
+        adId: ad.id,
+        payload: {
+          isTodaysDeal: true,
+          dealEndsAt: days === null ? null : new Date(Date.now() + days * 86_400_000).toISOString(),
+        },
+      },
+      {
+        // Surface the backend's reason rather than a silent no-op: a 409 means
+        // the ad is not ACTIVE, a 422 means the window or the was-price is bad.
+        onError: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : 'تعذّر تحديث صفقة اليوم';
+          window.alert(msg);
+        },
+      },
+    );
+  };
+
   return (
     <div className="mx-auto w-full max-w-[1400px] px-7 pb-14 pt-6">
       <PageHead
@@ -76,6 +128,11 @@ export default function AdsPage() {
             options={STATUS_OPTIONS}
             value={status}
             onChange={(v) => { setStatus(v as AdminAdStatusScope); resetPage(); }}
+          />
+          <Segmented
+            options={TYPE_OPTIONS}
+            value={filters.type ?? ''}
+            onChange={(v) => { setFilters({ ...filters, type: v || null }); resetPage(); }}
           />
           <div className="min-w-[280px] flex-1">
             <SearchFilterBar
@@ -123,6 +180,7 @@ export default function AdsPage() {
                   onTakedown={onTakedown}
                   onRestore={onRestore}
                   onDelete={onDelete}
+                  onToggleDeal={onToggleDeal}
                 />
               ))}
             </div>
