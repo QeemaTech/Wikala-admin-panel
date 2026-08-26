@@ -11,7 +11,9 @@ interface BulkApproveBarProps {
 
 // Maps backend failure codes to Arabic copy.
 const FAILURE_REASON_AR: Record<string, string> = {
-  NOT_IN_QUEUE: 'لم يعد في قائمة الانتظار',
+  // Not a fault: another moderator decided on this ad first, or it was
+  // approved in an earlier click and this list had not caught up yet.
+  NOT_IN_QUEUE: 'راجعه مشرف آخر بالفعل',
   ERROR: 'خطأ غير متوقع',
 };
 function failureReasonAr(reason: string): string {
@@ -87,7 +89,7 @@ export function BulkApproveBar({ selected, onClear }: BulkApproveBarProps) {
         <div className="fixed bottom-24 start-1/2 z-40 -translate-x-1/2 max-w-sm rounded-[8px] border border-amber/30 bg-amber-50 px-4 py-3 text-[13px] shadow"
           style={{ transform: 'translateX(50%)' }}>
           <p className="font-semibold text-amber">
-            تمّت الموافقة جزئياً — فشلت {partialFailure.length} إعلانات:
+            تمّت الموافقة على البقية — {partialFailure.length} لم تُنفَّذ:
           </p>
           <ul className="mt-1.5 list-inside list-disc text-[11.5px] text-ink/70">
             {partialFailure.map((f) => (

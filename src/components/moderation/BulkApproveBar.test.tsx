@@ -60,12 +60,13 @@ describe('BulkApproveBar', () => {
     fireEvent.click(screen.getByText('موافقة مجمّعة'));
     fireEvent.click(screen.getByText('تأكيد'));
     await waitFor(() =>
-      expect(screen.getByText(/تمّت الموافقة جزئياً/)).toBeTruthy(),
+      expect(screen.getByText(/تمّت الموافقة على البقية/)).toBeTruthy(),
     );
     // Last 6 chars of each adId are shown, plus the Arabic reason mapping
     expect(screen.getByText('100001')).toBeTruthy();
     expect(screen.getByText('200002')).toBeTruthy();
-    expect(screen.getByText(/لم يعد في قائمة الانتظار/)).toBeTruthy();
+    // NOT_IN_QUEUE is someone else having decided first, not a fault of ours.
+    expect(screen.getByText(/راجعه مشرف آخر بالفعل/)).toBeTruthy();
     expect(screen.getByText(/خطأ غير متوقع/)).toBeTruthy();
     expect(onClear).not.toHaveBeenCalled();
   });
