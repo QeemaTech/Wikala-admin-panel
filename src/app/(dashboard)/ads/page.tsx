@@ -25,6 +25,7 @@ const STATUS_OPTIONS = [
   { value: 'PENDING', label: 'قيد المراجعة' },
   { value: 'DRAFT', label: 'مسودّات' },
   { value: 'ARCHIVED', label: 'مسحوبة' },
+  { value: 'SOLD', label: 'مُباعة' },
   { value: 'ALL', label: 'الكل' },
 ];
 

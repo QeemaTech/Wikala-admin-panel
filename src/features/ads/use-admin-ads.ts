@@ -35,6 +35,8 @@ export type AdminAdStatusScope =
   | 'DRAFT'
   /** PENDING_AI · PENDING_HUMAN · FLAGGED — awaiting or stalled in review. */
   | 'PENDING'
+  /** Closed deals. A swap marks both sides SOLD at once. */
+  | 'SOLD'
   | 'ALL';
 
 export interface AdminAdsResponse {
