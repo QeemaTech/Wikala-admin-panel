@@ -121,7 +121,7 @@ export function CampaignComposer() {
               </FieldWrapper>
             </div>
 
-            <AudienceTargeting value={audience} onChange={setAudience} count={estimate} loading={estimating} />
+            <AudienceTargeting value={audience} onChange={setAudience} count={estimate?.matched} loading={estimating} />
 
             {/* Body-level error only when no dialog is open (else it would sit behind the overlay). */}
             {submitError && !pending && <p className="text-[12.5px] text-red">{submitError}</p>}
@@ -162,7 +162,8 @@ export function CampaignComposer() {
 
       {pending?.mode === 'send' && (
         <ConfirmSendDialog
-          estimate={estimate ?? 0}
+          matched={estimate?.matched ?? 0}
+          reachable={estimate?.reachable ?? 0}
           pending={create.isPending}
           error={submitError}
           onCancel={() => { setPending(null); setSubmitError(null); }}
@@ -184,9 +185,19 @@ export function CampaignComposer() {
   );
 }
 
+/**
+ * The last thing shown before a campaign goes out, so it is the last chance to
+ * say something true about it.
+ *
+ * It used to promise "~353 users" — the number who MATCH the filter. A push
+ * arrives at a device, not at an account, so the number that matters is how
+ * many of them have the app installed with a registered token. When those two
+ * disagree the difference is the whole story, and hiding it turned a campaign
+ * that reached nobody into a confident success message.
+ */
 function ConfirmSendDialog({
-  estimate, pending, error, onCancel, onConfirm,
-}: { estimate: number; pending: boolean; error: string | null; onCancel: () => void; onConfirm: () => void }) {
+  matched, reachable, pending, error, onCancel, onConfirm,
+}: { matched: number; reachable: number; pending: boolean; error: string | null; onCancel: () => void; onConfirm: () => void }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 px-4" role="dialog" aria-modal="true">
       <div className="w-full max-w-sm rounded-[12px] bg-white p-5 shadow-xl">
@@ -196,9 +207,24 @@ function ConfirmSendDialog({
           </div>
           <h3 className="text-[15px] font-semibold text-ink">تأكيد الإرسال</h3>
         </div>
-        <p className="mb-4 text-[13px] text-ink-2">
-          سيُرسل هذا الإشعار إلى <b className="font-mono text-ink">~ {formatNumber(estimate)}</b> مستخدم الآن. هل أنت متأكد؟
+        <p className="mb-2 text-[13px] text-ink-2">
+          سيصل هذا الإشعار إلى <b className="font-mono text-ink">{formatNumber(reachable)}</b> جهاز
+          {matched > reachable && (
+            <> من أصل <b className="font-mono text-ink">{formatNumber(matched)}</b> مستخدم مستهدف</>
+          )}
+          . هل أنت متأكد؟
         </p>
+        {reachable === 0 ? (
+          <p className="mb-4 rounded-[8px] bg-red/10 px-3 py-2 text-[12.5px] text-red">
+            لا يوجد أي جهاز مسجَّل ضمن هذا الجمهور، لذلك <b>لن يصل الإشعار لأحد</b>.
+            الإشعار يُرسَل إلى الأجهزة وليس إلى الحسابات، ولا يُسجَّل الجهاز إلا بعد
+            فتح التطبيق على الهاتف.
+          </p>
+        ) : matched > reachable ? (
+          <p className="mb-4 rounded-[8px] bg-amber/10 px-3 py-2 text-[12.5px] text-ink-2">
+            {formatNumber(matched - reachable)} مستخدم بدون جهاز مسجَّل ولن يصلهم الإشعار.
+          </p>
+        ) : null}
         {error && <p className="mb-2 text-[12px] text-red">{error}</p>}
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onCancel} className="rounded-[8px] border border-border px-4 py-2 text-[13px] font-medium text-ink hover:bg-surface-2">إلغاء</button>

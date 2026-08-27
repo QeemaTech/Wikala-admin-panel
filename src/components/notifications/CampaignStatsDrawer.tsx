@@ -62,6 +62,24 @@ export function CampaignStatsDrawer({ campaign, onClose }: CampaignStatsDrawerPr
                 <Stat label="معدل الفتح" value={formatPercent(stats.ctr)} tone="text-green" />
               </div>
 
+              {/* A campaign that reached nobody looks identical to one that has
+                  not been opened yet: every number is 0. Say which it is — the
+                  usual answer is that the audience has no registered devices,
+                  because a push goes to a device and not to an account. */}
+              {stats.delivered === 0 && campaign.status === 'SENT' && (
+                <div className="mb-4 rounded-[10px] bg-red/10 px-3.5 py-3 text-[12.5px] text-ink-2">
+                  <b className="text-red">لم يصل هذا الإشعار إلى أي جهاز.</b>
+                  {(stats.unreachable ?? 0) > 0 && (
+                    <> {formatNumber(stats.unreachable ?? 0)} مستخدم من الجمهور المستهدف ليس لديه جهاز مسجَّل.</>
+                  )}
+                  {(stats.failed ?? 0) > 0 && (
+                    <> ورفضت خدمة الإشعارات {formatNumber(stats.failed ?? 0)} محاولة إرسال (رمز جهاز غير صالح أو منتهٍ).</>
+                  )}
+                  <br />
+                  يُسجَّل الجهاز عند فتح التطبيق على الهاتف، ولا يمكن إرسال إشعار إلى حساب بدون جهاز.
+                </div>
+              )}
+
               <div className="rounded-[var(--radius)] border border-border p-4">
                 <div className="mb-3 text-[13px] font-semibold text-ink">تفصيل التسليم</div>
                 <Bar

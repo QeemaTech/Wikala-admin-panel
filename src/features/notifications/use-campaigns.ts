@@ -16,6 +16,10 @@ export interface CampaignStats {
   delivered: number;
   opened: number;
   ctr: number;
+  /** Sends FCM refused — a dead or malformed token. */
+  failed?: number;
+  /** Targeted users who had no registered device at all. */
+  unreachable?: number;
 }
 
 /** PushCampaignDTO — Contract §7.39 Admin Push Campaigns. */
