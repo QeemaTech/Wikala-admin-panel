@@ -263,7 +263,7 @@ export default function CouponDetailPage() {
                         <div className="text-ink">{r.buyer?.name ?? '—'}</div>
                         {r.buyer && (
                           <div dir="ltr" className="text-start font-mono text-[11px] text-muted">
-                            {r.buyer.phone}
+                            {r.buyer.phone ?? '—'}
                           </div>
                         )}
                       </td>

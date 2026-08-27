@@ -100,7 +100,7 @@ export function useExportUsers() {
       const cols = ['الاسم', 'الهاتف', 'البريد', 'المستوى', 'الحالة', 'الموقع', 'الإعلانات', 'تاريخ التسجيل', 'آخر نشاط'];
       const rows = users.map((u) => [
         u.name,
-        u.phone,
+        u.phone ?? '',
         u.email ?? '',
         u.role,
         u.banStatus,

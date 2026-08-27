@@ -152,7 +152,7 @@ export function UsersTable({ params, onView, onPageChange, selectedIds, onSelect
                       <Avatar name={user.name} size={34} color={avatarColor(user.role)} />
                       <div>
                         <p className="font-medium text-ink">{user.name}</p>
-                        <p className="font-mono text-[11px] text-muted">{user.phone} · #{user.id.slice(-6)}</p>
+                        <p className="font-mono text-[11px] text-muted">{user.phone ?? '—'} · #{user.id.slice(-6)}</p>
                       </div>
                     </div>
                   </td>

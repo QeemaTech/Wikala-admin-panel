@@ -138,7 +138,7 @@ export function UserDetailDrawer({ userId, onClose }: Props) {
   const openEdit = () => {
     if (!user) return;
     setEditName(user.name);
-    setEditPhone(user.phone);
+    setEditPhone(user.phone ?? '');
     setEditEmail(user.email ?? '');
     setEditRole(user.role);
     setEditGov(user.governorate ?? '');
@@ -374,7 +374,7 @@ export function UserDetailDrawer({ userId, onClose }: Props) {
               <div className="border-b border-border px-5 py-4">
                 <SectionTitle>بيانات الاتصال</SectionTitle>
                 <InfoRow label="البريد الإلكتروني" value={user.email ?? '—'} />
-                <InfoRow label="رقم الجوال" value={<span dir="ltr">{user.phone}</span>} />
+                <InfoRow label="رقم الجوال" value={user.phone ? <span dir="ltr">{user.phone}</span> : '—'} />
                 <InfoRow label="الموقع" value={user.governorate ?? '—'} />
               </div>
 

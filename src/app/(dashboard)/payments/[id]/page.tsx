@@ -132,14 +132,14 @@ export default function PaymentDetailPage() {
                   <div className="min-w-0">
                     <div className="text-[13.5px] font-medium text-ink">{tx.user.name}</div>
                     <div dir="ltr" className="text-start font-mono text-[11.5px] text-muted">
-                      {tx.user.phone}
+                      {tx.user.phone ?? '—'}
                     </div>
                   </div>
                 </div>
                 {tx.user.email && <Row label="البريد" value={<span dir="ltr" className="text-start">{tx.user.email}</span>} />}
                 {tx.user.role && <Row label="الفئة" value={tx.user.role} />}
                 <Link
-                  href={`/users?q=${encodeURIComponent(tx.user.phone)}`}
+                  href={`/users?q=${encodeURIComponent(tx.user.phone ?? tx.user.name)}`}
                   className="mt-3 flex items-center justify-center gap-1.5 rounded-[8px] border border-border bg-white px-3 py-2 text-[12.5px] font-medium text-ink hover:bg-surface-2"
                 >
                   <Icon name="user" size={13} /> عرض في المستخدمين

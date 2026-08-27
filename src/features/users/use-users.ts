@@ -7,7 +7,8 @@ export type UserStatus = 'ACTIVE' | 'WARNED' | 'BANNED';
 export interface UserDTO {
   id: string;
   name: string;
-  phone: string;
+  /** Null for a social sign-in (Google/Apple/Facebook give an email, not a number). */
+  phone: string | null;
   email: string | null;
   role: string;
   banStatus: string;
