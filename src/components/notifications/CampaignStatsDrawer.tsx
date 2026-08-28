@@ -62,21 +62,40 @@ export function CampaignStatsDrawer({ campaign, onClose }: CampaignStatsDrawerPr
                 <Stat label="معدل الفتح" value={formatPercent(stats.ctr)} tone="text-green" />
               </div>
 
-              {/* A campaign that reached nobody looks identical to one that has
-                  not been opened yet: every number is 0. Say which it is — the
-                  usual answer is that the audience has no registered devices,
-                  because a push goes to a device and not to an account. */}
+              {/* A campaign that reached nobody looks identical to one nobody has
+                  opened yet: every number is 0. Say which it is, and be
+                  specific about WHY, because the two causes need opposite
+                  responses. `unreachable` means those accounts have no device
+                  at all, so the answer is "get people to open the app".
+                  `failed` means devices existed and the push service rejected
+                  their tokens, which is a fault on our side. Saying "nobody
+                  has a device" when 14 tokens were actually refused sends
+                  someone chasing the wrong problem for a week. */}
               {stats.delivered === 0 && campaign.status === 'SENT' && (
-                <div className="mb-4 rounded-[10px] bg-red/10 px-3.5 py-3 text-[12.5px] text-ink-2">
+                <div className="mb-4 rounded-[10px] bg-red/10 px-3.5 py-3 text-[12.5px] leading-relaxed text-ink-2">
                   <b className="text-red">لم يصل هذا الإشعار إلى أي جهاز.</b>
-                  {(stats.unreachable ?? 0) > 0 && (
-                    <> {formatNumber(stats.unreachable ?? 0)} مستخدم من الجمهور المستهدف ليس لديه جهاز مسجَّل.</>
-                  )}
                   {(stats.failed ?? 0) > 0 && (
-                    <> ورفضت خدمة الإشعارات {formatNumber(stats.failed ?? 0)} محاولة إرسال (رمز جهاز غير صالح أو منتهٍ).</>
+                    <>
+                      <br />
+                      <b>رفضت خدمة الإشعارات {formatNumber(stats.failed ?? 0)} جهازًا مسجَّلًا</b>{' '}
+                      (رمز الجهاز غير صالح أو منتهي الصلاحية). هذه أجهزة موجودة فعلًا، لكن
+                      رموزها قديمة، ويُحدَّث الرمز عند فتح التطبيق من جديد.
+                    </>
                   )}
-                  <br />
-                  يُسجَّل الجهاز عند فتح التطبيق على الهاتف، ولا يمكن إرسال إشعار إلى حساب بدون جهاز.
+                  {(stats.unreachable ?? 0) > 0 && (
+                    <>
+                      <br />
+                      {formatNumber(stats.unreachable ?? 0)} مستخدمًا من الجمهور المستهدف ليس لديه جهاز
+                      مسجَّل أصلًا. يُسجَّل الجهاز عند فتح التطبيق على الهاتف، ولا يمكن إرسال
+                      إشعار إلى حساب بدون جهاز.
+                    </>
+                  )}
+                  {(stats.failed ?? 0) === 0 && (stats.unreachable ?? 0) === 0 && (
+                    <>
+                      <br />
+                      لم تُسجَّل تفاصيل السبب لهذه الحملة (أُرسلت قبل إضافة هذا القياس).
+                    </>
+                  )}
                 </div>
               )}
 

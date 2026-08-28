@@ -1,0 +1,20 @@
+fix(notifications): say WHY a campaign reached nobody
+
+The drawer showed "0 delivered" and explained it only as "nobody has a
+registered device". For a campaign targeting 466 users, 14 devices WERE
+registered and the push service had rejected every one of their tokens.
+The backend was dropping `failed` and `unreachable` from the stats
+endpoint (fixed alongside); the drawer now renders both.
+
+They are different problems with opposite fixes:
+
+  rejected tokens   devices exist, tokens are stale
+                    -> they refresh when the app is opened again
+
+  no device         those accounts never opened the app on a phone
+                    -> nothing technical to fix
+
+An older campaign that predates the measurement now says the reason was
+not recorded, rather than inventing one.
+
+6 new tests; 47 files / 203 tests green, typecheck clean.
