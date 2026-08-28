@@ -1,6 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { get, put } from '@/lib/api/client';
 
+/** One governorate's delivery rate. Absent = that governorate pays the default. */
+export interface DeliveryZone {
+  /** Canonical key (CAIRO, GIZA...). The API accepts the Arabic label too and normalises it. */
+  governorate: string;
+  /** Arabic label, supplied by the API for display. */
+  label?: string;
+  feeMinor: number;
+  /** Order total (after coupon) at or above which this zone ships free. null = never. */
+  freeOverMinor: number | null;
+  /** false = we refuse checkout to this governorate entirely. */
+  enabled: boolean;
+}
+
 export interface SystemSettingsDTO {
   /** Flat list of enabled OTP channel codes (backend `otp_channels`). */
   otpChannels: string[];
@@ -25,6 +38,13 @@ export interface SystemSettingsDTO {
   };
   dealRadarLimits: { free: number; basic: number; pro: number };
   geo: { defaultRadiusKm: number; maxRadiusKm: number; userConfigurable: boolean };
+  /** Delivery pricing. Per-governorate rates plus the fallback default. */
+  commerce: {
+    deliveryFeeMinor: number;
+    freeShippingOverMinor: number | null;
+    codEnabled: boolean;
+    deliveryZones: DeliveryZone[];
+  };
   numberSystem: 'arabic' | 'latin';
   trust: {
     autoWatermark: boolean;

@@ -9,6 +9,7 @@ import { OtpChannelsPanel } from '@/components/settings/OtpChannelsPanel';
 import { SecuritySettingsPanel } from '@/components/settings/SecuritySettingsPanel';
 import { DealRadarLimitsPanel } from '@/components/settings/DealRadarLimitsPanel';
 import { AdPostingLimitsPanel } from '@/components/settings/AdPostingLimitsPanel';
+import { ShippingZonesPanel } from '@/components/settings/ShippingZonesPanel';
 import { CurrencyTable } from '@/components/settings/CurrencyTable';
 import { ApiError } from '@/lib/api/errors';
 import {
@@ -297,6 +298,9 @@ export default function SettingsPage() {
 
         {/* Free-tier ad allowance + ad lifetime */}
         <AdPostingLimitsPanel settings={draft} onChange={onChange} />
+
+        {/* Per-governorate delivery pricing */}
+        <ShippingZonesPanel settings={draft} onChange={onChange} />
 
         {/* Deal Radar limits + geo radius */}
         <DealRadarLimitsPanel settings={draft} onChange={onChange} />
