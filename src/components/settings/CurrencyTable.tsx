@@ -22,6 +22,25 @@ const FLAGS: Record<string, string> = {
 
 const fmtRate = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(n);
 
+/**
+ * How long ago a rate was last touched.
+ *
+ * Rates are typed in by hand, not pulled from a feed, so the only thing that
+ * tells a member of staff whether a number is still trustworthy is its age.
+ * Anything past a month is called out in amber — it is not an error, but it is
+ * the figure every converted price on the app is being multiplied by.
+ */
+const rateAge = (iso: string | null) => {
+  if (!iso) return null;
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (!Number.isFinite(days) || days < 0) return null;
+  if (days === 0) return { text: 'حُدّث اليوم', stale: false };
+  if (days === 1) return { text: 'حُدّث أمس', stale: false };
+  if (days < 30) return { text: `حُدّث منذ ${days} يوم`, stale: false };
+  const months = Math.floor(days / 30);
+  return { text: `لم يُحدَّث منذ ${months} شهر`, stale: true };
+};
+
 interface CurrencyTableProps {
   /** Base currency code — its rate is locked at 1.00 and labelled "أساسية". */
   baseCurrency: string;
@@ -75,6 +94,14 @@ export function CurrencyTable({ baseCurrency }: CurrencyTableProps) {
                     <td className="px-5 py-3 font-mono text-ink">{c.code}</td>
                     <td className="px-5 py-3 font-mono text-ink">
                       {isBase ? '1.00 (افتراضي)' : fmtRate(c.exchangeRateToBase)}
+                      {!isBase && (() => {
+                        const age = rateAge(c.updatedAt);
+                        return age ? (
+                          <span className={`block font-sans text-[11px] ${age.stale ? 'text-amber' : 'text-muted'}`}>
+                            {age.text}
+                          </span>
+                        ) : null;
+                      })()}
                     </td>
                     <td className="px-5 py-3">
                       {isBase ? (
