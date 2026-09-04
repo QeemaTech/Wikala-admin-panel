@@ -20,9 +20,17 @@ interface StatusChip {
 export function auctionStatusChip(a: AuctionDTO): StatusChip {
   if (a.status === 'LIVE') {
     const secsLeft = a.endTime ? (new Date(a.endTime).getTime() - Date.now()) / 1000 : Infinity;
-    if (secsLeft > 0 && secsLeft < 3600) return { tone: 'red', label: 'تنتهي قريباً' };
+    // An auction whose deadline has passed but which the server has not settled
+    // yet was rendered as a confident green "نشط" next to a countdown already
+    // reading "انتهى" — the row contradicted itself, and staff could not tell
+    // whether bidding was still open. Settlement is a background sweep, so this
+    // gap is normal for a short window and must be shown honestly rather than
+    // reported as healthy.
+    if (secsLeft <= 0) return { tone: 'gray', label: 'انتهى — بانتظار الإغلاق' };
+    if (secsLeft < 3600) return { tone: 'red', label: 'تنتهي قريباً' };
     return { tone: 'green', label: 'نشط' };
   }
+
   if (a.status === 'SCHEDULED') return { tone: 'gray', label: 'بانتظار الاعتماد' };
   if (a.status === 'ENDED_WON') return { tone: 'blue', label: 'انتهى — تم البيع' };
   return { tone: 'gray', label: 'انتهى — بدون مزايدات' };

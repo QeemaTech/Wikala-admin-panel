@@ -37,7 +37,28 @@ describe('auctionStatusChip', () => {
   it('marks SCHEDULED auctions as awaiting approval', () => {
     expect(auctionStatusChip({ ...ROW, status: 'SCHEDULED' })).toEqual({ tone: 'gray', label: 'بانتظار الاعتماد' });
   });
+
+  it('does NOT claim a past-deadline auction is still active', () => {
+    // Observed live: 20 auctions sat LIVE with an end_time weeks in the past,
+    // and each row showed a green "نشط" beside a countdown reading "انتهى".
+    // The row contradicted itself and staff could not tell whether bidding was
+    // still open.
+    const overdue = { ...ROW, endTime: new Date(Date.now() - 26 * 24 * 3600 * 1000).toISOString() };
+    const chip = auctionStatusChip(overdue);
+
+    expect(chip.tone).not.toBe('green');
+    expect(chip.label).not.toBe('نشط');
+    expect(chip).toEqual({ tone: 'gray', label: 'انتهى — بانتظار الإغلاق' });
+  });
+
+  it('treats an auction ending this very second as ended, not as ending soon', () => {
+    // The boundary matters: at exactly zero the deadline has been reached, so
+    // "تنتهي قريباً" would still imply bidding is open.
+    const atZero = { ...ROW, endTime: new Date(Date.now()).toISOString() };
+    expect(auctionStatusChip(atZero).label).toBe('انتهى — بانتظار الإغلاق');
+  });
 });
+
 
 describe('AuctionsTable', () => {
   const noop = () => {};
